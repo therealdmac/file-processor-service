@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16
+    container_name: fileuploader-db-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${DB_PORT_LOCAL}:5432"
+    volumes:
+      - filedb_data:/var/lib/postgresql/data
+    networks:
+      - file-net
+
+  backend:
+    container_name: fileuploader-backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    ports:
+      - "${BACKEND_PORT}:8080"
+    depends_on:
+      - db
+    networks:
+      - file-net
+
+  adminer:
+    container_name: fileuploader-db-postgres-admin
+    image: adminer
+    restart: always
+    ports:
+      - "${ADMINER_PORT}:8080"
+    networks:
+      - file-net
+
+  frontend:
+    build: ./file-processor-ui
+    container_name: file-frontend
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - file-net
+
+volumes:
+  filedb_data:
+
+networks:
+  file-net:

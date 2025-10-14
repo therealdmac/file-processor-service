@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS file_metadata (
+  id SERIAL PRIMARY KEY,
+  file_name VARCHAR(1024) NOT NULL,
+  line_count BIGINT DEFAULT 0,
+  word_count BIGINT DEFAULT 0,
+  uploaded_at TIMESTAMP WITHOUT TIME ZONE
+);
