@@ -1,40 +1,49 @@
+databases:
+  - name: fileuploader-db
+
 services:
+  # --- BACKEND ---
   - type: web
     name: fileuploader-backend
     env: docker
     plan: free
     dockerfilePath: ./backend/Dockerfile
+    buildCommand: ""
+    startCommand: ""
     envVars:
       - key: DB_HOST
-        value: fileuploader-db
+        fromDatabase:
+          name: fileuploader-db
+          property: host
       - key: DB_PORT
-        value: 5432
+        fromDatabase:
+          name: fileuploader-db
+          property: port
       - key: DB_NAME
-        value: filedb
+        fromDatabase:
+          name: fileuploader-db
+          property: database
       - key: DB_USER
-        value: postgres
+        fromDatabase:
+          name: fileuploader-db
+          property: user
       - key: DB_PASS
-        value: postgres
-    dependsOn:
-      - fileuploader-db
+        fromDatabase:
+          name: fileuploader-db
+          property: password
     ports:
       - 8080
 
+  # --- FRONTEND ---
   - type: web
     name: fileuploader-frontend
     env: docker
     plan: free
     dockerfilePath: ./file-processor-ui/Dockerfile
-    dependsOn:
-      - fileuploader-backend
     envVars:
       - key: API_URL
         value: https://fileuploader-backend.onrender.com
+    dependsOn:
+      - fileuploader-backend
     ports:
       - 80
-
-  - type: pserv
-    name: fileuploader-db
-    env: docker
-    plan: free
-    dockerCommand: docker run -d -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=filedb postgres:16
