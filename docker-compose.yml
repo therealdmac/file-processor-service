@@ -17,8 +17,8 @@ services:
   backend:
     container_name: fileuploader-backend
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: ./Dockerfile
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -42,7 +42,8 @@ services:
       - file-net
 
   frontend:
-    build: ./file-processor-ui
+    build:
+      context: ./file-processor-ui
     container_name: file-frontend
     ports:
       - "${FRONTEND_PORT}:80"

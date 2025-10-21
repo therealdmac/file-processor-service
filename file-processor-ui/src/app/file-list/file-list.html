@@ -1,0 +1,79 @@
+<!-- <div class="file-list-container">
+  <h2>Uploaded Files</h2>
+  <table *ngIf="files.length > 0; else empty">
+    <thead>
+    <tr>
+      <th>Filename</th>
+      <th>Lines</th>
+      <th>Words</th>
+      <th>Uploaded At</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let file of files">
+      <td>{{ file.fileName }}</td>
+      <td>{{ file.lineCount }}</td>
+      <td>{{ file.wordCount }}</td>
+      <td>{{ file.uploadedAt | date: 'short' }}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <ng-template #empty>
+    <p>No files uploaded yet.</p>
+  </ng-template>
+</div> -->
+
+<div class="p-4">
+  <h2 class="text-xl font-semibold mb-4">Uploaded Files</h2>
+
+  <table class="min-w-full border border-gray-300">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="p-2 border">File Name</th>
+        <th class="p-2 border">Lines</th>
+        <th class="p-2 border">Words</th>
+        <th class="p-2 border">Uploaded At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let file of files" class="hover:bg-gray-50">
+        <td class="p-2 border">{{ file.fileName }}</td>
+        <td class="p-2 border">{{ file.lineCount }}</td>
+        <td class="p-2 border">{{ file.wordCount }}</td>
+        <td class="p-2 border">{{ file.uploadedAt | date: 'short' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination Controls -->
+  <div class="mt-4 flex justify-center items-center space-x-2">
+    <button
+      class="px-3 py-1 border rounded"
+      [disabled]="currentPage === 0"
+      (click)="goToPage(currentPage - 1)"
+    >
+      ‹ Prev
+    </button>
+
+    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+      <button
+        class="px-3 py-1 border rounded"
+        [ngClass]="{ 'bg-blue-500 text-white': i === currentPage }"
+        (click)="goToPage(i)"
+      >
+        {{ i + 1 }}
+      </button>
+    </ng-container>
+
+    <button
+      class="px-3 py-1 border rounded"
+      [disabled]="currentPage === totalPages - 1"
+      (click)="goToPage(currentPage + 1)"
+    >
+      Next ›
+    </button>
+  </div>
+</div>
+
+

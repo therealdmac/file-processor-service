@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: fileuploader-frontend
+    env: docker
+    plan: free
+    buildCommand: ""
+    startCommand: ""
+    dockerContext: .
+    dockerfilePath: ./file-processor-ui/Dockerfile
+    envVars:
+      - key: BACKEND_URL
+        value: https://fileuploader-backend.onrender.com
+
+  - type: web
+    name: fileuploader-backend
+    env: docker
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: fileuploader-db
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://fileuploader-frontend.onrender.com
+
+  - type: pserv
+    name: fileuploader-db
+    env: docker
+    plan: free
+    image: postgres:16
+    envVars:
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        value: postgres
+      - key: POSTGRES_DB
+        value: filedb
