@@ -1,7 +1,7 @@
 databases:
   - name: fileuploader-db
     databaseName: filedb
-    user: postgres
+    user: filedbuser
 
 services:
   # --- BACKEND SERVICE ---
