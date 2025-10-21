@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:15
@@ -18,18 +19,25 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
+        # wait for DB to be healthy before starting tests
         options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+          --health-cmd "pg_isready -U postgres -d filedb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      #  Java setup for your backend
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
+      #  Cache Maven dependencies
       - name: Cache Maven local repository
         uses: actions/cache@v4
         with:
@@ -38,16 +46,44 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      #  Wait for Postgres before running tests
+      - name: Wait for Postgres to be ready
+        run: |
+          for i in {1..15}; do
+            if pg_isready -h localhost -U postgres -d filedb; then
+              echo " Postgres is ready"
+              break
+            fi
+            echo "⏳ Waiting for Postgres..."
+            sleep 5
+          done
+
+      #  Build and test backend
       - name: Build & run tests
+        working-directory: ./backend
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/filedb
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
-        run: mvn -B -DskipTests=false test
+        run: mvn -B clean test
 
-      - name: Package
-        run: mvn -B package --file pom.xml -DskipTests
+      #  Package JAR
+      - name: Package application
+        working-directory: ./backend
+        run: mvn -B package -DskipTests
 
-      - name: Build Docker image (local)
+      #  Build Docker image (backend)
+      - name: Build backend Docker image
+        working-directory: ./backend
+        run: docker build -t file-processor-service:latest .
+
+      #  Optionally: build frontend
+      - name: Build frontend (Angular)
+        working-directory: ./file-processor-ui
         run: |
-          docker build -t file-processor-service:latest .
+          npm ci
+          npm run build --if-present
+
+      #  Optionally: ensure docker-compose builds
+      - name: Test docker-compose build
+        run: docker compose build
